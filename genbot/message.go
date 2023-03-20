@@ -64,7 +64,7 @@ type Message struct {
 }
 
 // Transform a decoded packet into a structurized message.
-func BuildMessage(packet []byte) Message {
+func buildMessage(packet []byte) Message {
 	var cursor int = 0
 
 	crc := binary.LittleEndian.Uint32(packet[cursor : cursor+4])

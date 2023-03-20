@@ -15,7 +15,7 @@ import (
 	Each block (4 bytes) XORed, the value for the XOR operation (mixMagic) is incremented by 0x321.
 */
 
-func Obfuscate(deobfuscated *[]byte, key uint32) {
+func obfuscate(deobfuscated *[]byte, key uint32) {
 	size := len(*deobfuscated)
 
 	var amountOfBlocks int = size / 4
@@ -37,7 +37,7 @@ func Obfuscate(deobfuscated *[]byte, key uint32) {
 	}
 }
 
-func Deobfuscate(obfuscated *[]byte, key uint32) {
+func deobfuscate(obfuscated *[]byte, key uint32) {
 	size := len(*obfuscated)
 
 	var amountOfBlocks int = size / 4

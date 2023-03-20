@@ -22,7 +22,7 @@ type MessageBodyChat struct {
 	buffer []rune   // Buffer with the chat message contents.
 }
 
-func ParseMessageBodyChat(data []byte) MessageBodyChat {
+func parseMessageBodyChat(data []byte) MessageBodyChat {
 	var cursor int = 0
 
 	game := ByteSequenceToUTF16(data[cursor : cursor+34])

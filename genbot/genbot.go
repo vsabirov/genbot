@@ -37,14 +37,14 @@ func serve(connection *net.UDPConn) error {
 func handle(packet []byte, sender net.Addr) {
 	sanitize(&packet)
 
-	message := BuildMessage(packet)
+	message := buildMessage(packet)
 	if message.header.magic != MessageDefaultMagic {
 		// Ignore invalid messages.
 		return
 	}
 
 	if message.header.mtype == MessageChat {
-		body := ParseMessageBodyChat(message.data)
+		body := parseMessageBodyChat(message.data)
 
 		fmt.Println(string(message.header.username), " says ", string(body.buffer))
 	}
@@ -52,5 +52,5 @@ func handle(packet []byte, sender net.Addr) {
 
 // Prepare packet for structurization.
 func sanitize(packet *[]byte) {
-	Deobfuscate(packet, PacketKey)
+	deobfuscate(packet, PacketKey)
 }
