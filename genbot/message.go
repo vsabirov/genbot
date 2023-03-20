@@ -49,9 +49,13 @@ const (
 )
 
 type MessageHeader struct {
-	crc   uint32      // CRC Sum of the entire message (including the header).
-	magic uint16      // Magic number to make sure the message has been decoded successfully.
+	crc   uint32 // CRC Sum of the entire message (including the header).
+	magic uint16 // Magic number to make sure the message has been decoded successfully.
+
 	mtype MessageType // Type of this message.
+
+	username []rune // Name of the player that sent this message.
+	flag     uint32 // TODO: Research this one.
 }
 
 type Message struct {
@@ -72,13 +76,23 @@ func BuildMessage(packet []byte) Message {
 	mtype := binary.LittleEndian.Uint32(packet[cursor : cursor+4])
 	cursor += 4
 
+	username := ByteSequenceToUTF16(packet[cursor : cursor+26])
+	cursor += 26
+
+	flag := binary.LittleEndian.Uint32(packet[cursor : cursor+4])
+	cursor += 4
+
 	data := packet[cursor : cursor+(len(packet)-cursor)]
 
 	return Message{
 		header: MessageHeader{
 			crc:   crc,
 			magic: magic,
+
 			mtype: MessageType(mtype),
+
+			username: username,
+			flag:     flag,
 		},
 
 		data: data,

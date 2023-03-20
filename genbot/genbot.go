@@ -42,8 +42,6 @@ func handle(packet []byte, sender net.Addr) {
 		// Ignore invalid messages.
 		return
 	}
-
-	fmt.Println(message.header.mtype)
 }
 
 // Prepare packet for structurization.
