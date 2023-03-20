@@ -40,3 +40,16 @@ func parseMessageBodyChat(data []byte) MessageBodyChat {
 		buffer: buffer,
 	}
 }
+
+func createMessageBodyChat(body MessageBodyChat) []byte {
+	var result []byte
+
+	four := make([]byte, 4)
+	binary.LittleEndian.PutUint32(four, uint32(body.ctype))
+
+	result = append(result, utf16ToByteSequence(body.game)...)
+	result = append(result, four...)
+	result = append(result, utf16ToByteSequence(body.buffer)...)
+
+	return result
+}

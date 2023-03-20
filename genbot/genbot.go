@@ -29,12 +29,12 @@ func serve(connection *net.UDPConn) error {
 			fmt.Println("Genbot client sent bad packet, dropping connection. ", err)
 		}
 
-		go handle(packet[:len], addr)
+		go handle(packet[:len], addr, connection)
 	}
 }
 
 // Read the message & respond if needed.
-func handle(packet []byte, sender net.Addr) {
+func handle(packet []byte, sender net.Addr, connection *net.UDPConn) {
 	sanitize(&packet)
 
 	message := buildMessage(packet)
@@ -47,12 +47,6 @@ func handle(packet []byte, sender net.Addr) {
 	if crc != message.header.crc {
 		// Ignore invalid messages.
 		return
-	}
-
-	if message.header.mtype == MessageChat {
-		body := parseMessageBodyChat(message.data)
-
-		fmt.Println(string(message.header.username), " says ", string(body.buffer))
 	}
 }
 

@@ -17,3 +17,18 @@ func byteSequenceToUTF16(sequence []byte) []rune {
 
 	return utf16.Decode(words)
 }
+
+func utf16ToByteSequence(text []rune) []byte {
+	words := utf16.Encode(text)
+
+	two := make([]byte, 2)
+
+	var sequence []byte
+	for w := 0; w < len(words); w++ {
+		binary.LittleEndian.PutUint16(two, words[w])
+
+		sequence = append(sequence, two...)
+	}
+
+	return sequence
+}
