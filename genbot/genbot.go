@@ -42,6 +42,12 @@ func handle(packet []byte, sender net.Addr) {
 		// Ignore invalid messages.
 		return
 	}
+
+	if message.header.mtype == MessageChat {
+		body := ParseMessageBodyChat(message.data)
+
+		fmt.Println(string(message.header.username), " says ", string(body.buffer))
+	}
 }
 
 // Prepare packet for structurization.
