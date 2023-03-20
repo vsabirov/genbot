@@ -25,13 +25,13 @@ type MessageBodyChat struct {
 func parseMessageBodyChat(data []byte) MessageBodyChat {
 	var cursor int = 0
 
-	game := ByteSequenceToUTF16(data[cursor : cursor+34])
+	game := byteSequenceToUTF16(data[cursor : cursor+34])
 	cursor += 34
 
 	ctype := ChatType(binary.LittleEndian.Uint32(data[cursor : cursor+4]))
 	cursor += 4
 
-	buffer := ByteSequenceToUTF16(data[cursor : cursor+202])
+	buffer := byteSequenceToUTF16(data[cursor : cursor+202])
 	cursor += 202
 
 	return MessageBodyChat{

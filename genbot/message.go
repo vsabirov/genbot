@@ -76,7 +76,7 @@ func buildMessage(packet []byte) Message {
 	mtype := binary.LittleEndian.Uint32(packet[cursor : cursor+4])
 	cursor += 4
 
-	username := ByteSequenceToUTF16(packet[cursor : cursor+26])
+	username := byteSequenceToUTF16(packet[cursor : cursor+26])
 	cursor += 26
 
 	flag := binary.LittleEndian.Uint32(packet[cursor : cursor+4])

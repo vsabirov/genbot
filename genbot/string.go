@@ -7,7 +7,7 @@ import (
 
 // String operations. The game mainly uses UTF-16.
 
-func ByteSequenceToUTF16(sequence []byte) []rune {
+func byteSequenceToUTF16(sequence []byte) []rune {
 	size := len(sequence)
 
 	var words []uint16
