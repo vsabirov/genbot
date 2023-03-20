@@ -41,7 +41,7 @@ const (
 	MessageGameTimer
 	MessageGameOptions
 
-	// TODO: Research this one.
+	// Sets the current LANAPI state to active.
 	MessageSetActive
 
 	// Players gather game info upon joining.

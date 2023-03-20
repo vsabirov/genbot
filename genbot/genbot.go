@@ -43,6 +43,12 @@ func handle(packet []byte, sender net.Addr) {
 		return
 	}
 
+	crc := computeCRC(packet[4:])
+	if crc != message.header.crc {
+		// Ignore invalid messages.
+		return
+	}
+
 	if message.header.mtype == MessageChat {
 		body := parseMessageBodyChat(message.data)
 
