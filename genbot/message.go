@@ -66,7 +66,7 @@ type Message struct {
 	Sender     net.Addr     // Only for incoming messages: address of the sender machine.
 	Connection *net.UDPConn // Only for incoming messages: current connection.
 
-	BotInfo GenbotInfo // Only for incoming messages: info about current genbot.
+	BotInfo *GenbotInfo // Only for incoming messages: info about current genbot.
 }
 
 // Transform a decoded packet into a structurized message.
@@ -82,7 +82,10 @@ func buildMessage(packet []byte) Message {
 	mtype := binary.LittleEndian.Uint32(packet[cursor : cursor+4])
 	cursor += 4
 
-	username := byteSequenceToUTF16(packet[cursor : cursor+26])
+	rawUsername := packet[cursor : cursor+26]
+	terminatedUsername := rawUsername[:findNullTerminator(rawUsername)]
+
+	username := byteSequenceToUTF16(terminatedUsername)
 	cursor += 26
 
 	flag := binary.LittleEndian.Uint32(packet[cursor : cursor+4])

@@ -33,7 +33,13 @@ type MessageHandlers interface {
 type DefaultMessageHandlers struct{}
 
 func (handlers DefaultMessageHandlers) OnRequestLocations(message Message) {
-	announceSelf(message.Connection, message.Sender, message.BotInfo)
+	announceSelf(message.Connection, message.Sender, *message.BotInfo)
+
+	key := string(message.Header.Username)
+
+	if message.BotInfo.Players[key] == nil {
+		message.BotInfo.Players[key] = message.Sender
+	}
 }
 
 func (handlers DefaultMessageHandlers) OnGameAnnounce(message Message) {
@@ -41,7 +47,13 @@ func (handlers DefaultMessageHandlers) OnGameAnnounce(message Message) {
 }
 
 func (handlers DefaultMessageHandlers) OnLobbyAnnounce(message Message) {
-	announceSelf(message.Connection, message.Sender, message.BotInfo)
+	announceSelf(message.Connection, message.Sender, *message.BotInfo)
+
+	key := string(message.Header.Username)
+
+	if message.BotInfo.Players[key] == nil {
+		message.BotInfo.Players[key] = message.Sender
+	}
 }
 
 func (handlers DefaultMessageHandlers) OnRequestJoin(message Message) {
@@ -61,7 +73,11 @@ func (handlers DefaultMessageHandlers) OnRequestGameLeave(message Message) {
 }
 
 func (handlers DefaultMessageHandlers) OnRequestLobbyLeave(message Message) {
-	return
+	key := string(message.Header.Username)
+
+	if message.BotInfo.Players[key] != nil {
+		delete(message.BotInfo.Players, key)
+	}
 }
 
 func (handlers DefaultMessageHandlers) OnSetAccept(message Message) {

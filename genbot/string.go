@@ -32,3 +32,17 @@ func utf16ToByteSequence(text []rune) []byte {
 
 	return sequence
 }
+
+func findNullTerminator(sequence []byte) int {
+	var prev byte = 0xFF
+
+	for pos, cur := range sequence {
+		if prev == 0x00 && cur == 0x00 {
+			return pos
+		}
+
+		prev = cur
+	}
+
+	return len(sequence)
+}

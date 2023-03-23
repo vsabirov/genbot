@@ -7,32 +7,11 @@ import (
 )
 
 type GenbotHandlers struct {
-	genbot.DefaultMessageHandlers
+	genbot.CommandMessageHandlers
 }
 
-func (handlers GenbotHandlers) OnChat(message genbot.Message) {
-	chatMessage := genbot.ParseMessageBodyChat(message.Data)
-
-	response := genbot.Message{
-		Header: genbot.MessageHeader{
-			CRC:   0,
-			Magic: genbot.MessageDefaultMagic,
-
-			Type: genbot.MessageChat,
-
-			Username: message.BotInfo.Username,
-		},
-
-		Data: genbot.CreateMessageBodyChat(genbot.MessageBodyChat{
-			Game:   chatMessage.Game,
-			Type:   genbot.ChatNormal,
-			Buffer: chatMessage.Buffer,
-		}),
-	}
-
-	genbot.SendMessage(response, message.Connection, message.Sender)
-
-	fmt.Println(string(message.Header.Username), " says ", string(chatMessage.Buffer), " from ", string(chatMessage.Game))
+func echoCommandHandler(message genbot.Message, chat genbot.MessageBodyChat) {
+	message.Respond("Echo", chat.Game)
 }
 
 func main() {
@@ -58,7 +37,13 @@ func main() {
 	bot.PCName = []rune("Lobby")
 	bot.Username = []rune("Genbot")
 
-	err = genbot.ListenAndServe(bot, GenbotHandlers{})
+	handlers := GenbotHandlers{}
+	handlers.Prefix = "!"
+	handlers.Commands = make(genbot.CommandRegistry)
+
+	handlers.Commands["echo"] = echoCommandHandler
+
+	err = genbot.ListenAndServe(&bot, handlers)
 	if err != nil {
 		fmt.Println("Genbot caught a critical error: ", err)
 	}

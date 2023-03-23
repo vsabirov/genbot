@@ -31,7 +31,10 @@ func ParseMessageBodyChat(data []byte) MessageBodyChat {
 	ctype := ChatType(binary.LittleEndian.Uint32(data[cursor : cursor+4]))
 	cursor += 4
 
-	buffer := byteSequenceToUTF16(data[cursor : cursor+202])
+	rawBuffer := data[cursor : cursor+202]
+	terminatedBuffer := rawBuffer[:findNullTerminator(rawBuffer)]
+
+	buffer := byteSequenceToUTF16(terminatedBuffer)
 	cursor += 202
 
 	return MessageBodyChat{
