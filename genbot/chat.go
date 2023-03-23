@@ -17,12 +17,12 @@ const (
 
 // Body of the chat message packet.
 type MessageBodyChat struct {
-	game   []rune   // Source game name.
-	ctype  ChatType // Chat message type.
-	buffer []rune   // Buffer with the chat message contents.
+	Game   []rune   // Source game name.
+	Type   ChatType // Chat message type.
+	Buffer []rune   // Buffer with the chat message contents.
 }
 
-func parseMessageBodyChat(data []byte) MessageBodyChat {
+func ParseMessageBodyChat(data []byte) MessageBodyChat {
 	var cursor int = 0
 
 	game := byteSequenceToUTF16(data[cursor : cursor+34])
@@ -35,9 +35,9 @@ func parseMessageBodyChat(data []byte) MessageBodyChat {
 	cursor += 202
 
 	return MessageBodyChat{
-		game:   game,
-		ctype:  ctype,
-		buffer: buffer,
+		Game:   game,
+		Type:   ctype,
+		Buffer: buffer,
 	}
 }
 
@@ -45,11 +45,11 @@ func createMessageBodyChat(body MessageBodyChat) []byte {
 	var result []byte
 
 	four := make([]byte, 4)
-	binary.LittleEndian.PutUint32(four, uint32(body.ctype))
+	binary.LittleEndian.PutUint32(four, uint32(body.Type))
 
-	result = append(result, utf16ToByteSequence(body.game)...)
+	result = append(result, utf16ToByteSequence(body.Game)...)
 	result = append(result, four...)
-	result = append(result, utf16ToByteSequence(body.buffer)...)
+	result = append(result, utf16ToByteSequence(body.Buffer)...)
 
 	return result
 }

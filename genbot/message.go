@@ -49,18 +49,18 @@ const (
 )
 
 type MessageHeader struct {
-	crc   uint32 // CRC Sum of the entire message (including the header).
-	magic uint16 // Magic number to make sure the message has been decoded successfully.
+	CRC   uint32 // CRC Sum of the entire message (including the header).
+	Magic uint16 // Magic number to make sure the message has been decoded successfully.
 
-	mtype MessageType // Type of this message.
+	Type MessageType // Type of this message.
 
-	username []rune // Name of the player that sent this message.
+	Username []rune // Name of the player that sent this message.
 	flag     uint32 // TODO: Research this one.
 }
 
 type Message struct {
-	header MessageHeader // Message metadata.
-	data   []byte        // Message payload.
+	Header MessageHeader // Message metadata.
+	Data   []byte        // Message payload.
 }
 
 // Transform a decoded packet into a structurized message.
@@ -85,17 +85,17 @@ func buildMessage(packet []byte) Message {
 	data := packet[cursor : cursor+(len(packet)-cursor)]
 
 	return Message{
-		header: MessageHeader{
-			crc:   crc,
-			magic: magic,
+		Header: MessageHeader{
+			CRC:   crc,
+			Magic: magic,
 
-			mtype: MessageType(mtype),
+			Type: MessageType(mtype),
 
-			username: username,
+			Username: username,
 			flag:     flag,
 		},
 
-		data: data,
+		Data: data,
 	}
 }
 

@@ -6,6 +6,16 @@ import (
 	"github.com/vsabirov/genbot/genbot"
 )
 
+type GenbotMessageHandlers struct {
+	genbot.DefaultMessageHandlers
+}
+
+func (handlers GenbotMessageHandlers) OnChat(message genbot.Message) {
+	chatMessage := genbot.ParseMessageBodyChat(message.Data)
+
+	fmt.Println(string(message.Header.Username), " says ", string(chatMessage.Buffer))
+}
+
 func main() {
 	var (
 		address string
@@ -23,7 +33,7 @@ func main() {
 
 	fmt.Println("Genbot is starting.")
 
-	err = genbot.ListenAndServe(address, port)
+	err = genbot.ListenAndServe(address, port, GenbotMessageHandlers{})
 	if err != nil {
 		fmt.Println("Genbot caught a critical error: ", err)
 	}

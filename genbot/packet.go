@@ -1,6 +1,8 @@
 package genbot
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+)
 
 // This code is responsible for sending packets over wire to other clients in the network.
 
@@ -19,17 +21,17 @@ type WirePacket struct {
 
 func messageToWirePacket(message Message, addr uint32, port uint16) WirePacket {
 	four := make([]byte, 4)
-	binary.LittleEndian.PutUint32(four, uint32(message.header.mtype))
+	binary.LittleEndian.PutUint32(four, uint32(message.Header.Type))
 
 	var data []byte
 	data = append(data, four...)
 
-	data = append(data, utf16ToByteSequence(message.header.username)...)
+	data = append(data, utf16ToByteSequence(message.Header.Username)...)
 
-	binary.LittleEndian.PutUint32(four, uint32(message.header.flag))
+	binary.LittleEndian.PutUint32(four, uint32(message.Header.flag))
 	data = append(data, four...)
 
-	data = append(data, message.data...)
+	data = append(data, message.Data...)
 
 	size := len(data)
 	for i := 0; i < 1024-size; i++ {
@@ -38,8 +40,8 @@ func messageToWirePacket(message Message, addr uint32, port uint16) WirePacket {
 
 	return WirePacket{
 		header: WirePacketHeader{
-			crc:   message.header.crc,
-			magic: message.header.magic,
+			crc:   message.Header.CRC,
+			magic: message.Header.Magic,
 		},
 
 		data:   [1024]byte(data),
@@ -74,6 +76,7 @@ func wirePacketToBlob(packet WirePacket) []byte {
 	result = append(result, two...)
 
 	size := len(result)
+
 	for i := 0; i < 1044-size; i++ {
 		result = append(result, 0x0)
 	}
