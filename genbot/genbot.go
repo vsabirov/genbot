@@ -5,6 +5,15 @@ import (
 	"net"
 )
 
+// General info about a bot.
+type GenbotInfo struct {
+	Address string
+	Port    uint16
+
+	Username []rune
+	PCName   []rune
+}
+
 // Map which helps to search message handler by its type.
 type MessageHandlerMap map[MessageType]func(message Message)
 
@@ -12,13 +21,47 @@ type MessageHandlerMap map[MessageType]func(message Message)
 const PacketKey = 0xFADE
 
 // Starts the bot, opens the socket and listens for messages.
-func ListenAndServe(address string, port uint16, handlers MessageHandlers) error {
-	listener, err := net.ListenUDP("udp", &net.UDPAddr{Port: int(port), IP: net.ParseIP(address)})
+func ListenAndServe(bot GenbotInfo, handlers MessageHandlers) error {
+	listener, err := net.ListenUDP("udp", &net.UDPAddr{Port: int(bot.Port), IP: net.ParseIP(bot.Address)})
 	if err != nil {
 		return err
 	}
 
-	return serve(listener, createHandlerMap(handlers))
+	fmt.Println("Connection opened, announcing self as ", string(bot.Username))
+
+	return serve(listener, createHandlerMap(handlers), bot)
+}
+
+// Sends a message down a connection to a receiver.
+func SendMessage(message Message, connection *net.UDPConn, receiver net.Addr) {
+	wire := messageToWirePacket(message)
+	wire = fillCRCForWirePacket(wire)
+
+	blob := wirePacketToBlob(wire)
+
+	obfuscate(&blob, PacketKey)
+
+	connection.WriteTo(blob, receiver)
+}
+
+// Announce that genbot is connected to the lobby.
+func announceSelf(connection *net.UDPConn, receiver net.Addr, bot GenbotInfo) {
+	heartbeat := Message{
+		Header: MessageHeader{
+			CRC:   0,
+			Magic: MessageDefaultMagic,
+
+			Type: MessageLobbyAnnounce,
+
+			Username: bot.Username,
+		},
+
+		Data: CreateMessageBodyLobbyAnnounce(MessageBodyLobbyAnnounce{
+			PCName: []rune("Lobby"),
+		}),
+	}
+
+	SendMessage(heartbeat, connection, receiver)
 }
 
 // Transform handlers interface to message resolver map.
@@ -55,33 +98,35 @@ func createHandlerMap(handlers MessageHandlers) MessageHandlerMap {
 }
 
 // Receive incoming messages and process each one in a different goroutine.
-func serve(connection *net.UDPConn, handlerMap MessageHandlerMap) error {
+func serve(connection *net.UDPConn, handlerMap MessageHandlerMap, bot GenbotInfo) error {
 	defer connection.Close()
 
-	packet := make([]byte, 1024)
+	packet := make([]byte, 1030)
 	for {
 		len, addr, err := connection.ReadFrom(packet)
 		if err != nil {
 			fmt.Println("Genbot client sent bad packet, dropping connection. ", err)
 		}
 
-		go handle(packet[:len], addr, connection, handlerMap)
+		go handle(packet[:len], addr, connection, handlerMap, bot)
 	}
 }
 
 // Read the message & respond if needed.
-func handle(packet []byte, sender net.Addr, connection *net.UDPConn, handlerMap MessageHandlerMap) {
+func handle(packet []byte, sender net.Addr, connection *net.UDPConn, handlerMap MessageHandlerMap, bot GenbotInfo) {
 	sanitize(&packet)
 
 	message := buildMessage(packet)
 	if message.Header.Magic != MessageDefaultMagic {
 		// Ignore invalid message magics.
+
 		return
 	}
 
 	crc := computeCRC(packet[4:])
 	if crc != message.Header.CRC {
 		// Ignore invalid message checksums.
+
 		return
 	}
 
@@ -91,7 +136,11 @@ func handle(packet []byte, sender net.Addr, connection *net.UDPConn, handlerMap 
 		return
 	}
 
-	handlerMap[message.Header.Type](message)
+	message.Sender = sender
+	message.Connection = connection
+	message.BotInfo = bot
+
+	go handlerMap[message.Header.Type](message)
 }
 
 // Prepare packet for structurization.

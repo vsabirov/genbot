@@ -33,7 +33,7 @@ type MessageHandlers interface {
 type DefaultMessageHandlers struct{}
 
 func (handlers DefaultMessageHandlers) OnRequestLocations(message Message) {
-	return
+	announceSelf(message.Connection, message.Sender, message.BotInfo)
 }
 
 func (handlers DefaultMessageHandlers) OnGameAnnounce(message Message) {
@@ -41,7 +41,7 @@ func (handlers DefaultMessageHandlers) OnGameAnnounce(message Message) {
 }
 
 func (handlers DefaultMessageHandlers) OnLobbyAnnounce(message Message) {
-	return
+	announceSelf(message.Connection, message.Sender, message.BotInfo)
 }
 
 func (handlers DefaultMessageHandlers) OnRequestJoin(message Message) {

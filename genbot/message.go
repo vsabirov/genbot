@@ -2,6 +2,7 @@ package genbot
 
 import (
 	"encoding/binary"
+	"net"
 )
 
 // Message magic should be equal to this if the message is valid.
@@ -61,6 +62,11 @@ type MessageHeader struct {
 type Message struct {
 	Header MessageHeader // Message metadata.
 	Data   []byte        // Message payload.
+
+	Sender     net.Addr     // Only for incoming messages: address of the sender machine.
+	Connection *net.UDPConn // Only for incoming messages: current connection.
+
+	BotInfo GenbotInfo // Only for incoming messages: info about current genbot.
 }
 
 // Transform a decoded packet into a structurized message.

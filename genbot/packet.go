@@ -13,30 +13,35 @@ type WirePacketHeader struct {
 
 type WirePacket struct {
 	header WirePacketHeader // Header of this packet.
-	data   [1024]byte       // Data of this packet.
-	length int32            // Length of data of this packet.
-	addr   uint32           // Receiver address.
-	port   uint16           // Receiver port.
+	data   []byte           // Data of this packet.
 }
 
-func messageToWirePacket(message Message, addr uint32, port uint16) WirePacket {
+func padBytes(sequence []byte, desiredSize int) []byte {
+	size := len(sequence)
+	if size >= desiredSize {
+		return sequence
+	}
+
+	for p := 0; p < desiredSize-size; p++ {
+		sequence = append(sequence, 0x0)
+	}
+
+	return sequence
+}
+
+func messageToWirePacket(message Message) WirePacket {
 	four := make([]byte, 4)
 	binary.LittleEndian.PutUint32(four, uint32(message.Header.Type))
 
 	var data []byte
 	data = append(data, four...)
 
-	data = append(data, utf16ToByteSequence(message.Header.Username)...)
+	data = append(data, padBytes(utf16ToByteSequence(message.Header.Username), 26)...)
 
 	binary.LittleEndian.PutUint32(four, uint32(message.Header.flag))
 	data = append(data, four...)
 
 	data = append(data, message.Data...)
-
-	size := len(data)
-	for i := 0; i < 1024-size; i++ {
-		data = append(data, 0x0)
-	}
 
 	return WirePacket{
 		header: WirePacketHeader{
@@ -44,11 +49,7 @@ func messageToWirePacket(message Message, addr uint32, port uint16) WirePacket {
 			magic: message.Header.Magic,
 		},
 
-		data:   [1024]byte(data),
-		length: int32(len(data)),
-
-		addr: addr,
-		port: port,
+		data: []byte(data),
 	}
 }
 
@@ -66,20 +67,13 @@ func wirePacketToBlob(packet WirePacket) []byte {
 
 	result = append(result, packet.data[:]...)
 
-	binary.LittleEndian.PutUint32(four, uint32(packet.length))
-	result = append(result, four...)
-
-	binary.LittleEndian.PutUint32(four, packet.addr)
-	result = append(result, four...)
-
-	binary.LittleEndian.PutUint16(two, packet.port)
-	result = append(result, two...)
-
-	size := len(result)
-
-	for i := 0; i < 1044-size; i++ {
-		result = append(result, 0x0)
-	}
-
 	return result
+}
+
+func fillCRCForWirePacket(packet WirePacket) WirePacket {
+	blob := wirePacketToBlob(packet)
+
+	packet.header.crc = computeCRC(blob[4:])
+
+	return packet
 }

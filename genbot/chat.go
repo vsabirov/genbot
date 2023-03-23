@@ -41,15 +41,15 @@ func ParseMessageBodyChat(data []byte) MessageBodyChat {
 	}
 }
 
-func createMessageBodyChat(body MessageBodyChat) []byte {
+func CreateMessageBodyChat(body MessageBodyChat) []byte {
 	var result []byte
 
 	four := make([]byte, 4)
 	binary.LittleEndian.PutUint32(four, uint32(body.Type))
 
-	result = append(result, utf16ToByteSequence(body.Game)...)
+	result = append(result, padBytes(utf16ToByteSequence(body.Game), 34)...)
 	result = append(result, four...)
-	result = append(result, utf16ToByteSequence(body.Buffer)...)
+	result = append(result, padBytes(utf16ToByteSequence(body.Buffer), 202)...)
 
 	return result
 }

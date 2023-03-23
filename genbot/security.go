@@ -28,7 +28,7 @@ func obfuscate(deobfuscated *[]byte, key uint32) {
 	mixMagic += 0x321
 
 	for b := 1; b < amountOfBlocks; b++ {
-		currentBlock = binary.BigEndian.Uint32((*deobfuscated)[b*4 : b*4+4])
+		currentBlock = binary.LittleEndian.Uint32((*deobfuscated)[b*4 : b*4+4])
 
 		currentBlock ^= uint32(mixMagic)
 		binary.BigEndian.PutUint32((*deobfuscated)[b*4:b*4+4], currentBlock)

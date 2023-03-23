@@ -6,14 +6,33 @@ import (
 	"github.com/vsabirov/genbot/genbot"
 )
 
-type GenbotMessageHandlers struct {
+type GenbotHandlers struct {
 	genbot.DefaultMessageHandlers
 }
 
-func (handlers GenbotMessageHandlers) OnChat(message genbot.Message) {
+func (handlers GenbotHandlers) OnChat(message genbot.Message) {
 	chatMessage := genbot.ParseMessageBodyChat(message.Data)
 
-	fmt.Println(string(message.Header.Username), " says ", string(chatMessage.Buffer))
+	response := genbot.Message{
+		Header: genbot.MessageHeader{
+			CRC:   0,
+			Magic: genbot.MessageDefaultMagic,
+
+			Type: genbot.MessageChat,
+
+			Username: message.BotInfo.Username,
+		},
+
+		Data: genbot.CreateMessageBodyChat(genbot.MessageBodyChat{
+			Game:   chatMessage.Game,
+			Type:   genbot.ChatNormal,
+			Buffer: chatMessage.Buffer,
+		}),
+	}
+
+	genbot.SendMessage(response, message.Connection, message.Sender)
+
+	fmt.Println(string(message.Header.Username), " says ", string(chatMessage.Buffer), " from ", string(chatMessage.Game))
 }
 
 func main() {
@@ -33,7 +52,13 @@ func main() {
 
 	fmt.Println("Genbot is starting.")
 
-	err = genbot.ListenAndServe(address, port, GenbotMessageHandlers{})
+	bot := genbot.GenbotInfo{}
+	bot.Address = address
+	bot.Port = port
+	bot.PCName = []rune("Lobby")
+	bot.Username = []rune("Genbot")
+
+	err = genbot.ListenAndServe(bot, GenbotHandlers{})
 	if err != nil {
 		fmt.Println("Genbot caught a critical error: ", err)
 	}
