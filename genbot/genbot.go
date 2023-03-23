@@ -1,7 +1,7 @@
 package genbot
 
 import (
-	"fmt"
+	"log"
 	"net"
 )
 
@@ -29,7 +29,7 @@ func ListenAndServe(bot *GenbotInfo, handlers MessageHandlers) error {
 		return err
 	}
 
-	fmt.Println("Connection opened, announcing self as ", string(bot.Username))
+	log.Println("Connection opened, announcing self as ", string(bot.Username))
 	bot.Players = make(map[string]net.Addr)
 
 	return serve(listener, createHandlerMap(handlers), bot)
@@ -58,9 +58,7 @@ func SendMessage(message Message, connection *net.UDPConn, receiver net.Addr) {
 func BroadcastMessage(message Message, connection *net.UDPConn) {
 	blob := prepare(message)
 
-	for username, address := range message.BotInfo.Players {
-		fmt.Println(username, address)
-
+	for _, address := range message.BotInfo.Players {
 		connection.WriteTo(blob, address)
 	}
 }
@@ -126,7 +124,7 @@ func serve(connection *net.UDPConn, handlerMap MessageHandlerMap, bot *GenbotInf
 	for {
 		len, addr, err := connection.ReadFrom(packet)
 		if err != nil {
-			fmt.Println("Genbot client sent bad packet, dropping connection. ", err)
+			log.Println("Genbot client sent bad packet, dropping connection. ", err)
 		}
 
 		go handle(packet[:len], addr, connection, handlerMap, bot)

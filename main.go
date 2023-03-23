@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"math/rand"
+	"strconv"
 
 	"github.com/vsabirov/genbot/genbot"
 )
@@ -10,8 +13,22 @@ type GenbotHandlers struct {
 	genbot.CommandMessageHandlers
 }
 
-func echoCommandHandler(message genbot.Message, chat genbot.MessageBodyChat) {
-	message.Respond("Echo", chat.Game)
+func guessCommandHandler(message genbot.Message, chat genbot.MessageBodyChat, arguments []string) {
+	guess, err := strconv.Atoi(arguments[1])
+	if err != nil {
+		message.Respond("Please, enter a valid number.", chat.Game)
+
+		return
+	}
+
+	actual := rand.Intn(100)
+
+	success := "CORRECT!"
+	if guess != actual {
+		success = "incorrect."
+	}
+
+	message.Respond(fmt.Sprintf("The number is %d. Your guess was %s", actual, success), chat.Game)
 }
 
 func main() {
@@ -29,7 +46,7 @@ func main() {
 		return
 	}
 
-	fmt.Println("Genbot is starting.")
+	log.Println("Genbot is starting.")
 
 	bot := genbot.GenbotInfo{}
 	bot.Address = address
@@ -41,12 +58,12 @@ func main() {
 	handlers.Prefix = "!"
 	handlers.Commands = make(genbot.CommandRegistry)
 
-	handlers.Commands["echo"] = echoCommandHandler
+	handlers.Commands["guess"] = guessCommandHandler
 
 	err = genbot.ListenAndServe(&bot, handlers)
 	if err != nil {
-		fmt.Println("Genbot caught a critical error: ", err)
+		log.Panicln("Genbot caught a critical error: ", err)
 	}
 
-	fmt.Println("Genbot is shutting down.")
+	log.Println("Genbot is shutting down.")
 }

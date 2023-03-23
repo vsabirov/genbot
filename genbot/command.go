@@ -1,12 +1,10 @@
 package genbot
 
-import (
-	"fmt"
-)
+import "strings"
 
 // Bot command API.
 
-type CommandRegistry map[string]func(message Message, chat MessageBodyChat)
+type CommandRegistry map[string]func(message Message, chat MessageBodyChat, arguments []string)
 
 type CommandMessageHandlers struct {
 	DefaultMessageHandlers
@@ -24,14 +22,14 @@ func (handlers CommandMessageHandlers) OnChat(message Message) {
 		return
 	}
 
-	command := payload[prefixLength:]
-	if handlers.Commands[command] == nil {
-		fmt.Printf("Command '%s' not found\n", command)
+	arguments := strings.Split(payload, " ")
 
+	command := arguments[0][prefixLength:]
+	if handlers.Commands[command] == nil {
 		return
 	}
 
-	handlers.Commands[command](message, chatMessage)
+	go handlers.Commands[command](message, chatMessage, arguments)
 }
 
 func (message Message) Respond(responsePayload string, game []rune) {
@@ -47,8 +45,8 @@ func (message Message) Respond(responsePayload string, game []rune) {
 
 		Data: CreateMessageBodyChat(MessageBodyChat{
 			Game:   game,
-			Type:   ChatSystem,
-			Buffer: []rune(responsePayload),
+			Type:   ChatEmote,
+			Buffer: []rune(" > " + responsePayload),
 		}),
 	}
 
