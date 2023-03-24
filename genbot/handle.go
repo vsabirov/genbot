@@ -105,7 +105,7 @@ func (handlers DefaultMessageHandlers) OnGameOptions(message Message) {
 }
 
 func (handlers DefaultMessageHandlers) OnSetActive(message Message) {
-	return
+	announceSelf(message.Connection, message.Sender, *message.BotInfo)
 }
 
 func (handlers DefaultMessageHandlers) OnRequestGameInfo(message Message) {

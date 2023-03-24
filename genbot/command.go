@@ -19,6 +19,8 @@ func (handlers CommandMessageHandlers) OnChat(message Message) {
 
 	prefixLength := len(handlers.Prefix)
 	if payload[:prefixLength] != handlers.Prefix {
+		// Ignore messages without the correct prefix.
+
 		return
 	}
 
@@ -26,6 +28,8 @@ func (handlers CommandMessageHandlers) OnChat(message Message) {
 
 	command := arguments[0][prefixLength:]
 	if handlers.Commands[command] == nil {
+		// Ignore unknown commands.
+
 		return
 	}
 
@@ -33,24 +37,5 @@ func (handlers CommandMessageHandlers) OnChat(message Message) {
 }
 
 func (message Message) Respond(responsePayload string, game []rune) {
-	response := Message{
-		Header: MessageHeader{
-			CRC:   0,
-			Magic: MessageDefaultMagic,
-
-			Type: MessageChat,
-
-			Username: message.BotInfo.Username,
-		},
-
-		Data: CreateMessageBodyChat(MessageBodyChat{
-			Game:   game,
-			Type:   ChatEmote,
-			Buffer: []rune(" > " + responsePayload),
-		}),
-	}
-
-	response.BotInfo = message.BotInfo
-
-	BroadcastMessage(response, message.Connection)
+	Say(responsePayload, game, message.BotInfo, message.Connection)
 }

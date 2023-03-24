@@ -63,6 +63,54 @@ func BroadcastMessage(message Message, connection *net.UDPConn) {
 	}
 }
 
+// Send a chat message to a specific game.
+func Say(message string, game []rune, bot *GenbotInfo, connection *net.UDPConn) {
+	packet := Message{
+		Header: MessageHeader{
+			CRC:   0,
+			Magic: MessageDefaultMagic,
+
+			Type: MessageChat,
+
+			Username: bot.Username,
+		},
+
+		Data: CreateMessageBodyChat(MessageBodyChat{
+			Game:   game,
+			Type:   ChatEmote,
+			Buffer: []rune(" > " + message),
+		}),
+	}
+
+	packet.BotInfo = bot
+
+	BroadcastMessage(packet, connection)
+}
+
+// Send a chat message to a specific game and a specific user.
+func SayDirect(message string, game []rune, bot *GenbotInfo, connection *net.UDPConn, receiver net.Addr) {
+	packet := Message{
+		Header: MessageHeader{
+			CRC:   0,
+			Magic: MessageDefaultMagic,
+
+			Type: MessageChat,
+
+			Username: bot.Username,
+		},
+
+		Data: CreateMessageBodyChat(MessageBodyChat{
+			Game:   game,
+			Type:   ChatEmote,
+			Buffer: []rune(" > " + message),
+		}),
+	}
+
+	packet.BotInfo = bot
+
+	SendMessage(packet, connection, receiver)
+}
+
 // Announce to a specific player that genbot is connected to the lobby.
 func announceSelf(connection *net.UDPConn, receiver net.Addr, bot GenbotInfo) {
 	heartbeat := Message{

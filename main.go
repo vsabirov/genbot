@@ -3,32 +3,13 @@ package main
 import (
 	"fmt"
 	"log"
-	"math/rand"
-	"strconv"
 
+	"github.com/vsabirov/genbot/commands"
 	"github.com/vsabirov/genbot/genbot"
 )
 
 type GenbotHandlers struct {
 	genbot.CommandMessageHandlers
-}
-
-func guessCommandHandler(message genbot.Message, chat genbot.MessageBodyChat, arguments []string) {
-	guess, err := strconv.Atoi(arguments[1])
-	if err != nil {
-		message.Respond("Please, enter a valid number.", chat.Game)
-
-		return
-	}
-
-	actual := rand.Intn(100)
-
-	success := "CORRECT!"
-	if guess != actual {
-		success = "incorrect."
-	}
-
-	message.Respond(fmt.Sprintf("The number is %d. Your guess was %s", actual, success), chat.Game)
 }
 
 func main() {
@@ -58,7 +39,8 @@ func main() {
 	handlers.Prefix = "!"
 	handlers.Commands = make(genbot.CommandRegistry)
 
-	handlers.Commands["guess"] = guessCommandHandler
+	handlers.Commands["guess"] = commands.Guess
+	handlers.Commands["announce"] = commands.Announce
 
 	err = genbot.ListenAndServe(&bot, handlers)
 	if err != nil {
